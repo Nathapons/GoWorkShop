@@ -1,0 +1,13 @@
+### Get product
+GET http://localhost:8081/api/v2/product HTTP/1.1
+Content-Type: application/json
+
+
+### create Product
+POST http://localhost:8081/api/v2/product HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "1234"
+}
