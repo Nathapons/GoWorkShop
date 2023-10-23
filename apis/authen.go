@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -31,10 +32,17 @@ func login(c *gin.Context) {
 		err := db.GetDB().First(&queryUser, "username = ?", user.Username).Error
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{"result": "ok", "error": err})
-		} else if (CheckPasswordHash(user.Password, queryUser.Password) == false){
+		} else if CheckPasswordHash(user.Password, queryUser.Password) == false {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "unauthorized", "error": "invalid password"})
 		} else {
-			c.JSON(http.StatusOK, gin.H{"result": "ok", "data": user})
+			atClaims := jwt.MapClaims{}
+			atClaims["id"] = queryUser.ID
+			atClaims["username"] = queryUser.Username
+			atClaims["level"] = queryUser.Level                                
+			atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
+			at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+			token, _ := at.SignedString([]byte("TokenSecret"))
+			c.JSON(http.StatusOK, gin.H{"result": "ok", "token": token})
 		}
 	} else {
 		c.JSON(http.StatusOK, gin.H{"result": "register"})
@@ -56,7 +64,7 @@ func register(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusOK, gin.H{"result": "ok", "data": user})
 		}
-		
+
 	} else {
 		c.JSON(http.StatusOK, gin.H{"result": "register"})
 	}
