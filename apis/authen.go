@@ -2,11 +2,11 @@ package api
 
 import (
 	"main/db"
+	"main/interceptor"
 	"main/models"
 	"net/http"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -35,13 +35,7 @@ func login(c *gin.Context) {
 		} else if CheckPasswordHash(user.Password, queryUser.Password) == false {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "unauthorized", "error": "invalid password"})
 		} else {
-			atClaims := jwt.MapClaims{}
-			atClaims["id"] = queryUser.ID
-			atClaims["username"] = queryUser.Username
-			atClaims["level"] = queryUser.Level                                
-			atClaims["exp"] = time.Now().Add(time.Minute * 15).Unix()
-			at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
-			token, _ := at.SignedString([]byte("TokenSecret"))
+			token := interceptor.JwtSign(queryUser)
 			c.JSON(http.StatusOK, gin.H{"result": "ok", "token": token})
 		}
 	} else {

@@ -1,6 +1,10 @@
 ### Get product
-GET http://localhost:8081/api/v2/product/?token=1234 HTTP/1.1
+GET http://localhost:8081/api/v2/product/ HTTP/1.1
 Content-Type: application/json
+
+### Get Product with Token
+GET http://localhost:8081/api/v2/product HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTgyNDE5MTUsImlkIjoxLCJsZXZlbCI6Im5vcm1hbCIsInVzZXJuYW1lIjoiYWRtaW4ifQ.0XlwLP7UDUbBmcKs7pppr7uTnQBF-qXuDc9E_yPo6YM
 
 
 ### create Product
