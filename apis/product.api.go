@@ -2,11 +2,15 @@ package api
 
 import (
 	"fmt"
+	"main/db"
 	"main/interceptor"
 	"main/models"
+	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,17 +28,40 @@ func getProduct(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "products", "username": c.GetString("jwt_username"), "level": c.GetString("level")})
 }
 
+func fileExists(filename string) bool {
+	info, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
+func saveImage(image *multipart.FileHeader, product *models.Product, c *gin.Context) {
+	if image != nil {
+		runningDir, _ := os.Getwd()
+		product.Image = image.Filename
+		extension := filepath.Ext(image.Filename)
+		fileName := fmt.Sprintf("%d%s", product.ID, extension)
+		filePath := fmt.Sprintf("%s/uploaded/images/%s", runningDir, fileName)
+
+		if fileExists(filePath) {
+			os.Remove(filePath)
+		}
+		c.SaveUploadedFile(image, filePath)
+		db.GetDB().Model(&product).Update("image", fileName)
+	}
+}
+
 func createProduct(c *gin.Context) {
 	product := models.Product{}
 	product.Name = c.PostForm("name")
 	product.Stock, _ = strconv.ParseInt(c.PostForm("stock"), 10, 64)
 	product.Price, _ = strconv.ParseFloat(c.PostForm("price"), 64)
-	image, _ := c.FormFile("image")
-	product.Image = image.Filename
+	product.CreatedAt = time.Now()
+	db.GetDB().Create(&product)
 
-	runningDir, _ := os.Getwd()
-	filePath := fmt.Sprint("%s/uploaded/images/%s", runningDir, image.Filename)
-	c.SaveUploadedFile(image, filePath)
+	image, _ := c.FormFile("image")
+	saveImage(image, &product, c)
 
 	c.JSON(http.StatusOK, gin.H{"result": product})
 }
