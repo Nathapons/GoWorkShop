@@ -19,13 +19,16 @@ import (
 func SetupProductAPI(router *gin.Engine) {
 	productAPI := router.Group("api/v2")
 	{
-		productAPI.GET("/product", interceptor.JwtVerify, getProduct)
+		productAPI.GET("/product", getProduct)
 		productAPI.POST("/product", interceptor.JwtVerify, createProduct)
 	}
 }
 
 func getProduct(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"result": "products", "username": c.GetString("jwt_username"), "level": c.GetString("level")})
+	var product models.Product
+	result := db.GetDB().Find(&product)
+	fmt.Println(result)
+	c.JSON(http.StatusOK, gin.H{"result": "result"})
 }
 
 func fileExists(filename string) bool {
