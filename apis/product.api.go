@@ -1,9 +1,11 @@
 package api
 
 import (
+	"fmt"
 	"main/interceptor"
 	"main/models"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -27,5 +29,12 @@ func createProduct(c *gin.Context) {
 	product.Name = c.PostForm("name")
 	product.Stock, _ = strconv.ParseInt(c.PostForm("stock"), 10, 64)
 	product.Price, _ = strconv.ParseFloat(c.PostForm("price"), 64)
+	image, _ := c.FormFile("image")
+	product.Image = image.Filename
+
+	runningDir, _ := os.Getwd()
+	filePath := fmt.Sprint("%s/uploaded/images/%s", runningDir, image.Filename)
+	c.SaveUploadedFile(image, filePath)
+
 	c.JSON(http.StatusOK, gin.H{"result": product})
 }
