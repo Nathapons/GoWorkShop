@@ -23,9 +23,17 @@ func JwtVerify(c *gin.Context) {
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
-		c.Set("jwt_username", claims["username"])
-		c.Set("level", claims["level"])
+		// Change data type to string
+		staffID := fmt.Sprintf("%v", claims["id"])
+		username := fmt.Sprintf("%v", claims["username"])
+		level := fmt.Sprintf("%v", claims["level"])
+
+		// Set data to gin.Context
+		c.Set("jwt_staff_id", staffID)
+		c.Set("jwt_username", username)
+		c.Set("level", level)
+
+		// Next to GIN Router
 		c.Next()
 	} else {
 		c.JSON(http.StatusOK, gin.H{"result": "nok", "error": err})
