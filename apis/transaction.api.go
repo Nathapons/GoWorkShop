@@ -1,7 +1,10 @@
 package api
 
 import (
+	"main/db"
+	"main/models"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,9 +18,18 @@ func SetupTransactionAPI(router *gin.Engine) {
 }
 
 func getTransaction(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"result": "Transaction"})
+	var transaction []models.Transaction
+	db.GetDB().Find(&transaction)
+	c.JSON(http.StatusOK, gin.H{"result": transaction})
 }
 
 func createTransaction(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"result": "create transaction"})
+	var transaction models.Transaction
+	if err := c.ShouldBind(&transaction); err == nil {
+		transaction.CreatedAt = time.Now()
+		db.GetDB().Create(&transaction)
+		c.JSON(http.StatusOK, gin.H{"result": "ok", "transaction": transaction})
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "nok"})
+	}
 }
