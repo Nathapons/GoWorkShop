@@ -15,7 +15,7 @@ func GetDB() *gorm.DB {
 }
 
 func SetupDB() {
-	dsn := "host=localhost user=jb password=12345678 dbname=golang port=5432 sslmode=disable TimeZone=Asia/Bangkok"
+	dsn := "host=localhost user=admin password=12345678 dbname=golang port=5432 sslmode=disable TimeZone=Asia/Bangkok"
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
